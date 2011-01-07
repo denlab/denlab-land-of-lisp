@@ -117,4 +117,28 @@
 ;> (add-cops '((1 (2)) (2 (1) (3)) (3 (2))) '((2 . 3) (3 . 2)))
 ;((1 (2)) (2 (1) (3 COPS)) (3 (2 COPS)))
 
+ (defun add-cops (edge-alist edges-with-cops)
+   (mapcar (lambda (x)
+              (let ((node1 (car x))
+                    (node1-edges (cdr x)))
+                (cons node1
+                     (mapcar (lambda (edge)
+                                (let ((node2 (car edge)))
+                                 (if (intersection (edge-pair node1 node2)
+                                                    edges-with-cops
+                                                    :test #'equal)
+                                      (list node2 'cops)
+                                    edge)))
+                              node1-edges))))
+            edge-alist))
+
+; ----------------------------------------------------------------------------
+; (edges-to-alist)
+; ----------------------------------------------------------------------------
+
+; hint : use (remove-duplicates :test ...)
+; hint : use (direct-edges)
+
+;> (edges-to-alist '((1 . 2) (2 . 1) (2 . 3) (3 . 2)))
+;((1 (2)) (2 (1) (3)) (3 (2)))
 
