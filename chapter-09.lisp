@@ -117,7 +117,7 @@
 ;> (add-cops '((1 (2)) (2 (1) (3)) (3 (2))) '((2 . 3) (3 . 2)))
 ;((1 (2)) (2 (1) (3 COPS)) (3 (2 COPS)))
 
- (defun add-cops (edge-alist edges-with-cops)
+(defun add-cops (edge-alist edges-with-cops)
    (mapcar (lambda (x)
               (let ((node1 (car x))
                     (node1-edges (cdr x)))
@@ -142,3 +142,155 @@
 ;> (edges-to-alist '((1 . 2) (2 . 1) (2 . 3) (3 . 2)))
 ;((1 (2)) (2 (1) (3)) (3 (2)))
 
+(defun edges-to-alist (edge-list)
+  (mapcar (lambda (node1)
+            (cons node1
+                  (mapcar (lambda (edge)
+                            (list (cdr edge)))
+                          (remove-duplicates (direct-edges node1 edge-list)
+                                             :test #'equal))))
+          (remove-duplicates (mapcar #'car edge-list))))
+
+; ----------------------------------------------------------------------------
+; (make-city-edges)
+; ----------------------------------------------------------------------------
+;> (make-city-edges)
+;((24 (4)) (4 (24) (23)) (28 (20) (5)) (10 (9)) (13 (11) (2)) (17 (8) (19))
+;(25 (11 COPS)
+
+(defun make-city-edges ()
+  (let* ((nodes (loop for i from 1 to *node-num* collect i))
+         (edge-list (connect-all-islands nodes (make-edge-list)))
+         (edge-with-cops (remove-if-not (lambda (x) (zerop (random *cop-odds*)))
+                                        edge-list)))
+    (add-cops (edges-to-alist edge-list) edge-with-cops)))
+
+; ----------------------------------------------------------------------------
+; (neighbors)
+; ----------------------------------------------------------------------------
+
+;> (neighbors '2 '((1 (2)) (2 (1) (3)) (3 (2))))
+;(1 3)
+;> (neighbors '1 '((1 (2)) (2 (1) (3)) (3 (2))))
+;(2)
+
+(defun neighbors (node edge-alist)
+  (mapcar #'car
+          (cdr (assoc node edge-alist))))
+
+; ----------------------------------------------------------------------------
+; (within-one)
+; ----------------------------------------------------------------------------
+
+;> (within-one '1 '2 '((1 (2)) (2 (1) (3)) (3 (2))))
+;(2)
+;> (within-one '1 '3 '((1 (2)) (2 (1) (3)) (3 (2))))
+;NIL
+
+(defun within-one (a b edge-alist)
+  (member b (neighbors a edge-alist)))
+
+; ----------------------------------------------------------------------------
+; (within-two)
+; ----------------------------------------------------------------------------
+
+;(within-two  '1 '2 '((1 (2)) (2 (1) (3)) (3 (2 4)) (4 (3))))
+;(2)
+;(within-two  '1 '3 '((1 (2)) (2 (1) (3)) (3 (2 4)) (4 (3))))
+;(3)
+;(within-two  '1 '4 '((1 (2)) (2 (1) (3)) (3 (2 4)) (4 (3))))
+;NIL
+
+(defun within-two (a b edge-alist)
+  (or (within-one a b edge-alist)
+      (some (lambda (x) (within-one x b edge-alist))
+            (neighbors a edge-alist))))
+
+; ----------------------------------------------------------------------------
+; (make-city-nodes)
+; ----------------------------------------------------------------------------
+
+; rules : 1 node with wumpus, 1 or 2 nodes from wumpus : blood!
+;         *worm-num* glow-worms, from 1 node to glow-worms : lights!
+;         sirens! in cops nodes
+
+;> (make-city-nodes (make-city-edges) )
+;((1 BLOOD! SIRENS!) (2 BLOOD! SIRENS!) (3 SIRENS!) (4 WUMPUS SIRENS!)
+;(5 BLOOD!) (6 LIGHTS! SIRENS!) (7 BLOOD!) (8 BLOOD! LIGHTS!) (9
+;BLOOD! LIGHTS! SIRENS!) (10) (11 BLOOD! SIRENS!) (12) (13 BLOOD! SIRENS!) (14) (15) (16 GLOW-WORM) (17) (18 LIGHTS! SIRENS!) (19) (20 LIGHTS!) (21 BLOOD!) (22 BLOOD!) (23 BLOOD! GLOW-WORM SIRENS!) (24 LIGHTS!) (25 GLOW-WORM) (26) (27 LIGHTS!) (28 SIRENS!) (29) (30))
+
+
+(defun make-city-nodes (edge-alist)
+  (let ((wumpus (random-node))
+        (glow-worms (loop for i below *worm-num*
+                          collect (random-node))))
+    (loop for n from 1 to *node-num*
+          collect (append (list n)
+                          cond ((eql n wumpus) '(wumpus))
+                          (cond ((member n glow-worms)
+                                 '(glow-worm))
+                                ((some (lambda (worm)
+                                         (within-one n worm edge-alist))
+                                       glow-worms)
+                                 '(lights!)))
+                          (when (some #'cdr (cdr (assoc n edge-alist)))
+                            '(sirens!))))))
+
+; ----------------------------------------------------------------------------
+; (find-empty-node)
+; ----------------------------------------------------------------------------
+
+;> (setf *congestion-city-nodes* (make-city-nodes *congestion-city-edges*))
+;((1) (2) (3) (4) (5 GLOW-WORM) (6) (7) (8) (9) (10) (11) (12) (13) (14) (15) (16) (17) (18) (19) (20 GLOW-WORM) (21 GLOW-WORM) (22) (23 WUMPUS) (24) (25) (26) (27) (28) (29) (30))
+;> (find-empty-node) 
+;7
+
+(defun find-empty-node ()
+  (let ((x (random-node)))
+    (if (cdr (assoc x *congestion-city-nodes*))
+        (find-empty-node)
+      x)))
+
+; ----------------------------------------------------------------------------
+; (draw-city)
+; ----------------------------------------------------------------------------
+
+; will draw a graph 
+; hint : no arg
+; take as global args : *congestion-city-edges*
+;                       *congestion-city-nodes*
+
+(defun draw-city ()
+  (ugraph->png "city" *congestion-city-nodes* *congestion-city-edges*))
+
+; ----------------------------------------------------------------------------
+; (new-game)
+; ----------------------------------------------------------------------------
+
+(defun new-game ()
+  (setf *congestion-city-edges* (make-city-edges))
+  (setf *congestion-city-nodes* (make-city-nodes *congestion-city-edges*))
+  (setf *player-pos* (find-empty-node))
+  (setf *visited-nodes* (list *player-pos*))
+  (draw-city))
+
+; ----------------------------------------------------------------------------
+; (known-city-nodes)
+; ----------------------------------------------------------------------------
+
+; hint : use mapcan
+
+; > (new-game)
+; (push '28 *visited-nodes* )
+; > *player-pos*
+; 17
+; > *visited-nodes*
+; (28 17)
+; > (known-city-nodes) 
+; ((17 *) (9 ?) (21 ?) (4 ?) (12 ?) (19 ?) (28 BLOOD! LIGHTS! SIRENS!) (6 ?) (8 ?) (18 ?))
+
+
+
+
+
+(defun )
