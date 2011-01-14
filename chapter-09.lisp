@@ -226,7 +226,7 @@
                           collect (random-node))))
     (loop for n from 1 to *node-num*
           collect (append (list n)
-                          cond ((eql n wumpus) '(wumpus))
+                          (cond ((eql n wumpus) '(wumpus)))
                           (cond ((member n glow-worms)
                                  '(glow-worm))
                                 ((some (lambda (worm)
@@ -288,5 +288,22 @@
 ; (28 17)
 ; > (known-city-nodes) 
 ; ((17 *) (9 ?) (21 ?) (4 ?) (12 ?) (19 ?) (28 BLOOD! LIGHTS! SIRENS!) (6 ?) (8 ?) (18 ?))
+
+(defun known-city-nodes ()
+  (mapcar (lambda (node)
+            (if (member node *visited-nodes*)
+                (let ((n (assoc node *congestion-city-nodes*)))
+                  (if (eql node *player-pos*)
+                      (append n '(*))
+                      n))
+                (list node '?)))
+          (remove-duplicates
+           (append *visited-nodes*
+                   (mapcan (lambda (node)
+                             (mapcar #'car
+                                     (cdr (assoc node
+                                                 *congestion-city-edges*))))
+                           *visited-nodes*)))))
+
 
 
