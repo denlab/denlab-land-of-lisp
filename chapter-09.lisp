@@ -219,20 +219,22 @@
 ;(5 BLOOD!) (6 LIGHTS! SIRENS!) (7 BLOOD!) (8 BLOOD! LIGHTS!) (9
 ;BLOOD! LIGHTS! SIRENS!) (10) (11 BLOOD! SIRENS!) (12) (13 BLOOD! SIRENS!) (14) (15) (16 GLOW-WORM) (17) (18 LIGHTS! SIRENS!) (19) (20 LIGHTS!) (21 BLOOD!) (22 BLOOD!) (23 BLOOD! GLOW-WORM SIRENS!) (24 LIGHTS!) (25 GLOW-WORM) (26) (27 LIGHTS!) (28 SIRENS!) (29) (30))
 
+
 (defun make-city-nodes (edge-alist)
   (let ((wumpus (random-node))
         (glow-worms (loop for i below *worm-num*
                        collect (random-node))))
     (loop for n from 1 to *node-num*
-                 collect (append (list n)
-                       (cond ((eql n wumpus) '(wumpus)))
-                       (cond ((member n glow-worms) '(glow-worm))
-                             ((some (lambda (worm)
-                                      (within-one n worm edge-alist))
-                                    glow-worms)
-                              '(lights!)))
-                       (when (some #'cdr (cdr (assoc n edge-alist)))
-                         '(sirens!))))))
+          collect (append (list n)
+                          (cond ((eql n wumpus) '(wumpus)))
+                          (cond ((member n glow-worms)
+                                 '(glow-worm))
+                                ((some (lambda (worm)
+                                         (within-one n worm edge-alist))
+                                       glow-worms)
+                                 '(lights!)))
+                          (when (some #'cdr (cdr (assoc n edge-alist)))
+                            '(sirens!))))))
 
 ; ----------------------------------------------------------------------------
 ; (find-empty-node)
@@ -303,5 +305,19 @@
                                                  *congestion-city-edges*))))
                            *visited-nodes*)))))
 
+;; ----------------------------------------------------------------------------
+;; (known-city-edges)
+;; ----------------------------------------------------------------------------
+;; CL-USER> (push '28 *visited-nodes*)
+;; CL-USER> (known-city-edges)
+;; ((28 (15) (1) (3) (27)) (27 (28)))
 
+(defun known-city-edges ()
+  (mapcar (lambda (node)
+            (cons node (mapcar (lambda (x)
+                                 (if (member (car x) *visited-nodes*)
+                                     x
+                                     (list (car x))))
+                               (cdr (assoc node *congestion-city-edges*)))))
+          *visited-nodes*))
 
