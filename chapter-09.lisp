@@ -361,3 +361,17 @@
                       (princ "You ran into a Glow Worm Gang! You're now at ")
                       (princ new-pos)
                       (handle-new-place nil new-pos nil))))))
+
+;; ----------------------------------------------------------------------------
+;; (handle-direction)
+;; ----------------------------------------------------------------------------
+
+;; CL-USER> (handle-direction '99 nil)
+;; That location does not exist!
+
+(defun handle-direction (pos charging)
+  (let ((edge (assoc pos
+                     (cdr (assoc *player-pos* *congestion-city-edges*)))))
+    (if edge
+        (handle-new-place edge pos charging)
+        (princ "That location does not exist!"))))
