@@ -375,3 +375,13 @@
     (if edge
         (handle-new-place edge pos charging)
         (princ "That location does not exist!"))))
+
+;; ----------------------------------------------------------------------------
+;; (walk) and (charge)
+;; ----------------------------------------------------------------------------
+
+(defun walk (pos)
+  (handle-direction pos nil))
+
+(defun charge (pos)
+  (handle-direction pos t))
