@@ -321,3 +321,10 @@
                                (cdr (assoc node *congestion-city-edges*)))))
           *visited-nodes*))
 
+
+;; ----------------------------------------------------------------------------
+;; (draw-known-city)
+;; ----------------------------------------------------------------------------
+
+(defun draw-known-city ()
+  (ugraph->png "known-city" (known-city-nodes) (known-city-edges)))
