@@ -272,7 +272,8 @@
   (setf *congestion-city-nodes* (make-city-nodes *congestion-city-edges*))
   (setf *player-pos* (find-empty-node))
   (setf *visited-nodes* (list *player-pos*))
-  (draw-city))
+  (draw-city)
+  (draw-known-city))
 
 ; ----------------------------------------------------------------------------
 ; (known-city-nodes)
