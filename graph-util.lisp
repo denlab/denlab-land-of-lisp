@@ -107,10 +107,14 @@
 ; (graph->png)
 ; ----------------------------------------------------------------------------
 
- (defun graph->png (fname nodes edges)
-   (dot->png fname
-             (lambda ()
-               (graph->dot nodes edges))))
+;; (graph->png "ze-graph"
+;;            '((node-1 node-1-descr) (node-2 node-2-descr))
+;;            '((node-1 (node-2 edge-1->2-descr))))
+
+(defun graph->png (fname nodes edges)
+  (dot->png fname
+            (lambda ()
+              (graph->dot nodes edges))))
 
 ; ----------------------------------------------------------------------------
 ; (uedges->dot)
