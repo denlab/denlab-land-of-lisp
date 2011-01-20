@@ -415,3 +415,11 @@
               (push (cdr x) (gethash node tab))))
           edge-list)
     tab))
+
+;; ----------------------------------------------------------------------------
+;; (get-connected-hash)
+;; ----------------------------------------------------------------------------
+
+;; (get-connected-hash 'b 
+;;                     (hash-edges '((a . b) (b . a) (a . c) (c . a) (c . d) (d . c) (x . y) (y . x))))
+;; #S(HASH-TABLE :TEST FASTHASH-EQL (D . T) (C . T) (A . T) (B . T))
