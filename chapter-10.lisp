@@ -14,4 +14,7 @@
 ;; > (add '(a b) '(c d))
 ;; (A B C D)
 
+(defun add (a b)
+     (cond ((and (numberp a) (numberp b)) (+ a b))
+           ((and (listp a) (listp b)) (append a b))))
 
