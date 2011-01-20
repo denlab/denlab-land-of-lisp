@@ -3,15 +3,15 @@
 ;; -----------------------------------------------------------------------------
 
 ;; ----------------------------------------------------------------------------
-;; (add)
+;; (add-bad-style)
 ;; -----------------------------------------------------------------------------
 
-;; add take 2 args, if its numbers : add them
+;; add-bad-style take 2 args, if its numbers : add them
 ;;                         list    : append them
 
-;; > (add 3 4)
+;; > (add-bad-style 3 4)
 ;; 7
-;; > (add '(a b) '(c d))
+;; > (add-bad-style '(a b) '(c d))
 ;; (A B C D)
 
 ;; WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!
@@ -21,7 +21,7 @@
 ;; 
 ;; WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!
 
-(defun add (a b)
+(defun add-bad-style (a b)
      (cond ((and (numberp a) (numberp b)) (+ a b))
            ((and (listp a) (listp b)) (append a b))))
 
