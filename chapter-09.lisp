@@ -406,6 +406,12 @@
 ;; > (hash-edges '((a . b) (b . a) (a . c)))
 ;; #S(HASH-TABLE :TEST FASTHASH-EQL (B . (A)) (A . (C B)))
 
+(defparameter *edge-alist* '((a . b) (b . a) (a . c)))
 
-
-
+(defun hash-edges (edge-list)
+  (let ((tab (make-hash-table)))
+    (mapc (lambda (x)
+            (let ((node (car x)))
+              (push (cdr x) (gethash node tab))))
+          edge-list)
+    tab))
