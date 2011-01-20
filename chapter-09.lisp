@@ -423,3 +423,14 @@
 ;; (get-connected-hash 'b 
 ;;                     (hash-edges '((a . b) (b . a) (a . c) (c . a) (c . d) (d . c) (x . y) (y . x))))
 ;; #S(HASH-TABLE :TEST FASTHASH-EQL (D . T) (C . T) (A . T) (B . T))
+
+(defun get-connected-hash (node edge-tab)
+  (let ((visited (make-hash-table)))
+    (labels ((traverse (node)
+               (unless (gethash node visited)
+                 (setf (gethash node visited) t)
+                 (mapc (lambda (edge)
+                         (traverse edge))
+                       (gethash node edge-tab)))))
+      (traverse node))
+    visited))
