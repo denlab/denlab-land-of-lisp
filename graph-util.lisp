@@ -107,9 +107,19 @@
 ; (graph->png)
 ; ----------------------------------------------------------------------------
 
-;; (graph->png "ze-graph"
+;; A directed graph with node description
+;; 
+;; (graph->png "graph-with-descr"
 ;;            '((node-1 node-1-descr) (node-2 node-2-descr))
 ;;            '((node-1 (node-2 edge-1->2-descr))))
+
+;; A directed graph without node description
+;; 
+;; (graph->png "graph-without-descr"
+;;            '((node-1) (node-2))
+;;            '((node-1 (node-2))))
+
+
 
 (defun graph->png (fname nodes edges)
   (dot->png fname
